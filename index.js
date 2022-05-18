@@ -1,17 +1,22 @@
 //object
+const rectangle = require("./rectangle");
 var rect = require("./rectangle")
 
 function solveRect(l,b){
     console.log("computing the rectangle value " + l +"and"+b)
 
-    if(l <= 0 || b <= 0)
-    {
-        console.log("Invalid dimension");
-    }
-    else{
-        console.log("The area of rectagle is "+  rect.area(l,b))
-        console.log("The perimeter of rectangle is" + rect.perimeter(l,b));
-    }
+   rect(l , b , (err , rectangle) =>{
+        if(err)
+        {
+            console.log("Error : " , err.message);
+        }
+        else{
+            console.log("The area is =" +rectangle.area());
+            console.log("The primeter is "+ rectangle.perimeter());
+        }
+   });
+
+   console.log("This statement is after the callback func");
 }
 
 solveRect(2 ,4);
