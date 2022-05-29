@@ -1,4 +1,7 @@
 const http = require('http');
+const fs = require('fs'); // read and write into the file
+import { exists } from 'fs';
+const path = require('path'); // setting the path
 
 const hostname = 'localhost';
 const port = 5000;
@@ -9,11 +12,26 @@ const port = 5000;
 // it will return the response - res
 
 const server = http.createServer((req,res) => {
-    console.log(req.headers);
+    console.log("Request for " + req.url + "by methode" + req.method);
 
-    res.statusCode = 200;
-    res.setHeader('Content-Type' , 'text/html');
-    res.end('<html><body><h1> Hi , i am learing Node</h1> </body></html>');
+
+   if(req.method == 'GET')
+   {
+       var fileUrl;
+       if(req.url == '/')
+            fileUrl = '/index.html';
+       else
+            fileUrl = '/about.html'; 
+       
+        var filePath = path.resolve('./public'+fileUrl);
+        const fileExt = path.extname(filePath);
+        
+        if(fileExt == '.html'){
+           fs.existsSync(filePath,(existsSync)=>{
+
+           })
+       }         
+   }
 })
 
 // here we start the server
