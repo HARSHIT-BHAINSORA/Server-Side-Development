@@ -67,6 +67,8 @@ const dishSchema = new Schema(
   }
 );
 
+// Models provides the interface bet the database and the Schema. -> Connection
+
 var Dishes = mongoose.model("Dish", dishSchema);
 
 module.exports = Dishes;
