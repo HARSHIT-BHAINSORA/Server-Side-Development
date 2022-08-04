@@ -4,6 +4,9 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
+var session = require("express-session");
+var FileStore = require("session-file-store")(session);
+
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var dishRouter = require("./routes/dishes");
@@ -37,14 +40,28 @@ app.set("view engine", "jade");
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser("124434323-4352-2323423-24342556"));
+app.use(cookieParser());
+
+app.use(
+  session({
+    name: "session-id",
+    secret: "124434323-4352-2323423-24342556",
+    saveUninitialized: false,
+    resave: false,
+    store: new FileStore(),
+  })
+);
 
 // secret key in parser
 
-function auth(req, res, next) {
-  console.log(req.signedCookies);
+var save_session = function (req, user) {
+  req.session.user = user;
+};
 
-  if (!req.signedCookies.user) {
+function auth(req, res, next) {
+  console.log(req.session);
+
+  if (!req.session.user) {
     var authHeader = req.headers.authorization;
 
     if (authHeader === null) {
@@ -65,7 +82,8 @@ function auth(req, res, next) {
       .split(":");
 
     if (username === "admin" && password === "password") {
-      res.cookie("user", "admin", { signed: true });
+      // res.session.user = "admin";
+      save_session(req, "admin");
       next(); // from the auth it will match to the next middleware
     } else {
       var err = new Error("Send Correct username and password!");
@@ -74,7 +92,8 @@ function auth(req, res, next) {
       return next(err);
     }
   } else {
-    if (req.signedCookies.user === "admin") {
+    if (req.session.user === "admin") {
+      console.log("req.session: ", req.session);
       next();
     } else {
       var err = new Error("Not Authenticated...");
