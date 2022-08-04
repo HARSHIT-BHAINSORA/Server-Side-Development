@@ -37,37 +37,50 @@ app.set("view engine", "jade");
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser("124434323-4352-2323423-24342556"));
+
+// secret key in parser
 
 function auth(req, res, next) {
-  console.log(req.headers);
+  console.log(req.signedCookies);
 
-  var authHeader = req.headers.authorization;
+  if (!req.signedCookies.user) {
+    var authHeader = req.headers.authorization;
 
-  if (authHeader === null) {
-    // we need to challenages over client to auth -> user
-    var err = new Error("YOU are Not Authenticated!");
-    res.setHeader("WWW-Authenticate", "Basic");
-    err.status = 401;
-    // next skip all middleware and jump into in error handler
-    return next(err);
-  }
+    if (authHeader === null) {
+      // we need to challenages over client to auth -> user
+      var err = new Error("YOU are Not Authenticated!");
+      res.setHeader("WWW-Authenticate", "Basic");
+      err.status = 401;
+      // next skip all middleware and jump into in error handler
+      return next(err);
+    }
 
-  // extract the info from header it is a String in type
-  // here we are trying to split the authHeader - Basic<space> "Uncoded Value"
-  // we say split it acc to space and store in array so first part is Basic and second will be info[1]index
-  const b64auth = (req.headers.authorization || "").split(" ")[1] || " ";
-  const [username, password] = Buffer.from(b64auth, "base64")
-    .toString()
-    .split(":");
+    // extract the info from header it is a String in type
+    // here we are trying to split the authHeader - Basic<space> "Uncoded Value"
+    // we say split it acc to space and store in array so first part is Basic and second will be info[1]index
+    const b64auth = (req.headers.authorization || "").split(" ")[1] || " ";
+    const [username, password] = Buffer.from(b64auth, "base64")
+      .toString()
+      .split(":");
 
-  if (username === "admin" && password === "password") {
-    next(); // from the auth it will match to the next middleware
+    if (username === "admin" && password === "password") {
+      res.cookie("user", "admin", { signed: true });
+      next(); // from the auth it will match to the next middleware
+    } else {
+      var err = new Error("Send Correct username and password!");
+      res.setHeader("WWW-Authenticate", "Basic");
+      err.status = 401;
+      return next(err);
+    }
   } else {
-    var err = new Error("Send Correct username and password!");
-    res.setHeader("WWW-Authenticate", "Basic");
-    err.status = 401;
-    return next(err);
+    if (req.signedCookies.user === "admin") {
+      next();
+    } else {
+      var err = new Error("Not Authenticated...");
+      err.status = 401;
+      return next(err);
+    }
   }
 }
 
