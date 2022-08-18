@@ -15,6 +15,7 @@ var usersRouter = require("./routes/users");
 var dishRouter = require("./routes/dishes");
 var leaderRouter = require("./routes/leader");
 var promoRouter = require("./routes/promotion");
+var uploadRouter = require("./routes/uploadRouter");
 
 const mongoose = require("mongoose");
 const Dishes = require("./models/dishes");
@@ -58,6 +59,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/dishes", dishRouter);
 app.use("/leader", leaderRouter);
 app.use("/promotion", promoRouter);
+app.use("/imageUpload", uploadRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -5,14 +5,28 @@ const User = require("../models/user.js");
 var passport = require("passport");
 const { authenticate } = require("passport");
 var authenticated = require("../authenticate");
+const Users = require("../models/user.js");
 
 var router = express.Router();
 router.use(bodyParser.json());
 router.use(express.urlencoded({ extended: true }));
 
-router.get("/", (req, res, next) => {
-  res.send("respond with a  resource");
-});
+router.get(
+  "/",
+  authenticated.verifyUser,
+  authenticated.verifyAdmin,
+  (req, res, next) => {
+    Users.find({}, (err, users) => {
+      if (err) {
+        return next(err);
+      } else {
+        res.statusCode = 200;
+        res.setHeader("Content_type", "application/json");
+        res.json(users);
+      }
+    });
+  }
+);
 
 router.post("/signup", (req, res, next) => {
   User.register(
@@ -55,7 +69,7 @@ router.post("/login", passport.authenticate("local"), (req, res, next) => {
   });
 });
 
-router.get("/logout", (req, res) => {
+router.get("/logout", (req, res, next) => {
   if (req.session) {
     req.session.destroy();
     res.clearCookie("session-id");
